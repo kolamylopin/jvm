@@ -10,7 +10,6 @@ import org.springframework.boot.ApplicationRunner
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.stereotype.Component
-import java.util.concurrent.atomic.AtomicInteger
 
 @Component
 class EngineStatusHandler(@Autowired val discoveryClient: EurekaClient)
@@ -22,21 +21,13 @@ class EngineStatusHandler(@Autowired val discoveryClient: EurekaClient)
 
     @Autowired
     private val context: ApplicationContext? = null
-    private val attempts = AtomicInteger()
 
     override fun onEvent(event: EurekaEvent?) {
-        val engineInstances = discoveryClient.getApplication("engine")
-        if (engineInstances == null) {
-            if (attempts.getAndIncrement() >= 3) {
-                logger.error("No engine available! Shutting down")
-                if (context is ConfigurableApplicationContext) {
-                    context.close()
-                }
-            } else {
-                logger.warn("Unable to find engine service. Attempt {}", attempts.get())
+        if (discoveryClient.getApplication("engine") == null) {
+            logger.error("No engine is available! Shutting down")
+            if (context is ConfigurableApplicationContext) {
+                context.close()
             }
-        } else {
-            attempts.set(0)
         }
     }
 
