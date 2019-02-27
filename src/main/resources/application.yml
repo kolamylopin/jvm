@@ -1,6 +1,6 @@
 spring:
   application:
-    name: dp-calculator
+    name: dpCalculator
 server:
   port: 0
 eureka:

@@ -22,7 +22,7 @@ class EngineStatusHandler(@Autowired val discoveryClient: EurekaClient)
 
     @Autowired
     private val context: ApplicationContext? = null
-    private var attempts = AtomicInteger()
+    private val attempts = AtomicInteger()
 
     override fun onEvent(event: EurekaEvent?) {
         val engineInstances = discoveryClient.getApplication("engine")
