@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: dp-calculator
+server:
+  port: 0
+eureka:
+  client:
+    registry-fetch-interval-seconds: 3
+    serviceUrl:
+      defaultZone: http://localhost:8000/eureka/
+  instance:
+    preferIpAddress: true
+    lease-renewal-interval-in-seconds: 1
+    lease-expiration-duration-in-seconds: 3
+    instanceId: ${spring.application.name}:${spring.application.instance_id:${random.value}}
