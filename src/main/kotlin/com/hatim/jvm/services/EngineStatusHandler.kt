@@ -1,4 +1,4 @@
-package com.hatim.jvm.configurations
+package com.hatim.jvm.services
 
 import com.netflix.discovery.EurekaClient
 import com.netflix.discovery.EurekaEvent
