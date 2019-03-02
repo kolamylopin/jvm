@@ -9,9 +9,10 @@ import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ConfigurableApplicationContext
-import org.springframework.stereotype.Component
+import org.springframework.stereotype.Service
+import java.util.concurrent.atomic.AtomicInteger
 
-@Component
+@Service
 class EngineStatusHandler(@Autowired val discoveryClient: EurekaClient)
     : EurekaEventListener, ApplicationRunner {
 
@@ -21,13 +22,22 @@ class EngineStatusHandler(@Autowired val discoveryClient: EurekaClient)
 
     @Autowired
     private val context: ApplicationContext? = null
+    var allowedEngineCheckAttempts: Int = 3
+    private val engineWaitAvailable = AtomicInteger(allowedEngineCheckAttempts)
 
     override fun onEvent(event: EurekaEvent?) {
         if (discoveryClient.getApplication("engine") == null) {
-            logger.error("No engine is available! Shutting down")
-            if (context is ConfigurableApplicationContext) {
-                context.close()
+            val leftAttempts = engineWaitAvailable.getAndDecrement()
+            if (leftAttempts == 0) {
+                logger.error("No engine is available! Shutting down")
+                if (context is ConfigurableApplicationContext) {
+                    context.close()
+                }
+            } else {
+                logger.warn("Could not reach the engine. {} attempts left", leftAttempts)
             }
+        } else {
+            engineWaitAvailable.set(allowedEngineCheckAttempts)
         }
     }
 

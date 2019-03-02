@@ -6,17 +6,16 @@ import org.slf4j.LoggerFactory
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
 import org.springframework.stereotype.Service
-import java.util.concurrent.Executors
+import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.annotation.PreDestroy
 
 @Service
-class InputService : ApplicationRunner {
+class InputService(private val executor: Executor) : ApplicationRunner {
     companion object {
         private val logger = LoggerFactory.getLogger(InputService::class.java)
     }
 
-    private val executor = Executors.newSingleThreadExecutor()
     private val continueReading = AtomicBoolean(true)
 
     override fun run(args: ApplicationArguments?) {
