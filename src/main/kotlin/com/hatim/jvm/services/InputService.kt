@@ -3,23 +3,23 @@ package com.hatim.jvm.services
 import net.openhft.chronicle.core.Jvm
 import net.openhft.chronicle.queue.impl.single.SingleChronicleQueueBuilder
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.ApplicationArguments
+import org.springframework.boot.ApplicationRunner
 import org.springframework.stereotype.Service
-import java.util.concurrent.Executor
+import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
-import javax.annotation.PostConstruct
 import javax.annotation.PreDestroy
 
 @Service
-class InputService(@Autowired private val executor: Executor) {
+class InputService : ApplicationRunner {
     companion object {
         private val logger = LoggerFactory.getLogger(InputService::class.java)
     }
 
+    private val executor = Executors.newSingleThreadExecutor()
     private val continueReading = AtomicBoolean(true)
 
-    @PostConstruct
-    fun init() {
+    override fun run(args: ApplicationArguments?) {
         executor.execute(this::startReader)
     }
 
@@ -37,7 +37,7 @@ class InputService(@Autowired private val executor: Executor) {
                             if (message == null) {
                                 Jvm.pause(1)
                             } else {
-                                val difference = (System.nanoTime() - message?.toLong()) / 1e3
+                                val difference = (System.nanoTime() - message.toLong()) / 1e3
                                 logger.info("Took : {}", difference)
                             }
                         }
