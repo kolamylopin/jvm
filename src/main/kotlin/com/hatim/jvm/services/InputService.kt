@@ -13,14 +13,13 @@ import java.util.concurrent.atomic.AtomicBoolean
 import javax.annotation.PreDestroy
 
 @Service
-class InputService(private val executor: Executor) : ApplicationRunner {
+class InputService(@Autowired private val executor: Executor,
+                   @Autowired private val instanceConfig: CloudEurekaInstanceConfig) : ApplicationRunner {
     companion object {
         @JvmStatic
         private val logger = LoggerFactory.getLogger(InputService::class.java)
     }
 
-    @Autowired
-    private var instanceConfig: CloudEurekaInstanceConfig? = null
     private val continueReading = AtomicBoolean(true)
 
     override fun run(args: ApplicationArguments?) {
@@ -41,7 +40,7 @@ class InputService(private val executor: Executor) : ApplicationRunner {
                             if (message == null) {
                                 Jvm.pause(1)
                             } else {
-                                instanceConfig?.instanceId?.let {
+                                instanceConfig.instanceId.let {
                                     val parts = message.split("$")
                                     if (parts.size >= 2 && it == parts[0]) {
                                         logger.info("Received : {}", parts[1])
