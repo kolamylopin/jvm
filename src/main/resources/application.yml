@@ -1,8 +1,6 @@
 spring:
   application:
     name: dpCalculator
-server:
-  port: 0
 eureka:
   client:
     registry-fetch-interval-seconds: 3
@@ -13,3 +11,9 @@ eureka:
     lease-renewal-interval-in-seconds: 1
     lease-expiration-duration-in-seconds: 3
     instanceId: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+application:
+  wait-in-microseconds-between-reads: 50
+  input-queue: D:/queues
+  engine:
+    name: engine
+    connections-attempts: 3

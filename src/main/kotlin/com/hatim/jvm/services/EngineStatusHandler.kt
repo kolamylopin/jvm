@@ -1,5 +1,6 @@
 package com.hatim.jvm.services
 
+import com.hatim.jvm.utils.Configuration
 import com.netflix.discovery.EurekaClient
 import com.netflix.discovery.EurekaEvent
 import com.netflix.discovery.EurekaEventListener
@@ -13,20 +14,19 @@ import org.springframework.stereotype.Service
 import java.util.concurrent.atomic.AtomicInteger
 
 @Service
-class EngineStatusHandler(@Autowired val discoveryClient: EurekaClient)
+class EngineStatusHandler(@Autowired private val discoveryClient: EurekaClient,
+                          @Autowired private val configuration: Configuration,
+                          @Autowired private val context: ApplicationContext)
     : EurekaEventListener, ApplicationRunner {
 
     companion object {
         private val logger = LoggerFactory.getLogger(EngineStatusHandler::class.java)
     }
 
-    @Autowired
-    private val context: ApplicationContext? = null
-    var allowedEngineCheckAttempts: Int = 3
-    private val engineWaitAvailable = AtomicInteger(allowedEngineCheckAttempts)
+    private val engineWaitAvailable = AtomicInteger(configuration.engineConnectionsAttempts)
 
     override fun onEvent(event: EurekaEvent?) {
-        if (discoveryClient.getApplication("engine") == null) {
+        if (discoveryClient.getApplication(configuration.engineName) == null) {
             val leftAttempts = engineWaitAvailable.getAndDecrement()
             if (leftAttempts == 0) {
                 logger.error("No engine is available! Shutting down")
@@ -37,7 +37,7 @@ class EngineStatusHandler(@Autowired val discoveryClient: EurekaClient)
                 logger.warn("Could not reach the engine. {} attempts left", leftAttempts)
             }
         } else {
-            engineWaitAvailable.set(allowedEngineCheckAttempts)
+            engineWaitAvailable.set(configuration.engineConnectionsAttempts)
         }
     }
 
