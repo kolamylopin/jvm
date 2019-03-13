@@ -27,7 +27,7 @@ class InputService(@Autowired private val executor: Executor,
 
     private val waitInNanoBetweenReads = configuration.waitInMsBetweenReads * 1000
 
-    private val continueReading = AtomicBoolean(true)
+    private val shuttingDown = AtomicBoolean(false)
 
     override fun run(args: ApplicationArguments?) {
         executor.execute(this::startReader)
@@ -35,7 +35,7 @@ class InputService(@Autowired private val executor: Executor,
 
     @PreDestroy
     fun destroy() {
-        continueReading.set(false)
+        shuttingDown.set(true)
     }
 
     private fun startReader() {
@@ -44,7 +44,7 @@ class InputService(@Autowired private val executor: Executor,
                     queue.createTailer().apply {
                         toEnd()
                         val requestCreator = { PricingRequest() }
-                        while (continueReading.get()) {
+                        while (!shuttingDown.get()) {
                             instanceConfig.instanceId.let { destination ->
                                 val request = lazilyReadDocument(requestCreator)
                                 if (request == null) {

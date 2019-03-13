@@ -34,7 +34,7 @@ fun main(args: Array<String>) {
 private fun setLogFileName() {
     val logDir = System.getProperty("logDir", "D:/logs")
 
-    val dateFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS")
+    val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss")
     val fileName = "jvm-${LocalDateTime.now().format(dateFormatter)}.log"
 
     System.setProperty("logFilename", "$logDir/$fileName")

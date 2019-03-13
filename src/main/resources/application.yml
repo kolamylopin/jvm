@@ -16,4 +16,4 @@ application:
   input-queue: D:/queues
   engine:
     name: engine
-    connections-attempts: 3
+    connections-attempts: 0
