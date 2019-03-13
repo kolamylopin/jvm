@@ -42,6 +42,7 @@ class InputService(@Autowired private val executor: Executor,
         SingleChronicleQueueBuilder.single(configuration.inputQueue)
                 .build().use { queue ->
                     queue.createTailer().apply {
+                        toEnd()
                         val requestCreator = { PricingRequest() }
                         while (continueReading.get()) {
                             instanceConfig.instanceId.let { destination ->

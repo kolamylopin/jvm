@@ -6,6 +6,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient
 import org.springframework.context.annotation.Bean
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
@@ -25,5 +27,15 @@ class JvmApplication : CommandLineRunner {
 }
 
 fun main(args: Array<String>) {
+    setLogFileName()
 	runApplication<JvmApplication>(*args)
+}
+
+private fun setLogFileName() {
+    val logDir = System.getProperty("logDir", "D:/logs")
+
+    val dateFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS")
+    val fileName = "jvm-${LocalDateTime.now().format(dateFormatter)}.log"
+
+    System.setProperty("logFilename", "$logDir/$fileName")
 }

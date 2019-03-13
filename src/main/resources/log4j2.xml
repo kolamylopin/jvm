@@ -5,14 +5,14 @@
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
         </Console>
         <RollingFile name="RollingFile"
-                     fileName="D:/logs/jvm-${date:HH-mm-dd-MM-yyyy}.log"
+                     fileName="${sys:logFilename}"
                      filePattern="D:/logs/jvm-%d{HH-mm-dd-MM-yyyy}-%i.log.gz"
                      ignoreExceptions="false">
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
             <Policies>
                 <OnStartupTriggeringPolicy/>
                 <SizeBasedTriggeringPolicy
-                        size="5 MB"/>
+                        size="5MB"/>
             </Policies>
         </RollingFile>
     </Appenders>
