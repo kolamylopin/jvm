@@ -5,11 +5,8 @@ import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient
-import org.springframework.context.annotation.Bean
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.concurrent.Executor
-import java.util.concurrent.Executors
 
 @SpringBootApplication
 @EnableDiscoveryClient
@@ -21,9 +18,6 @@ class JvmApplication : CommandLineRunner {
     override fun run(vararg args: String?) {
         logger.info("Application started")
     }
-
-    @Bean
-    fun getExecutor(): Executor = Executors.newSingleThreadExecutor()
 }
 
 fun main(args: Array<String>) {

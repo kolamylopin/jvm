@@ -11,22 +11,20 @@ import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
 import org.springframework.cloud.netflix.eureka.CloudEurekaInstanceConfig
 import org.springframework.stereotype.Service
-import java.util.concurrent.Executor
+import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.locks.LockSupport
 import javax.annotation.PreDestroy
 
 @Service
-class InputService(@Autowired private val executor: Executor,
-                   @Autowired private val instanceConfig: CloudEurekaInstanceConfig,
+class InputService(@Autowired private val instanceConfig: CloudEurekaInstanceConfig,
                    @Autowired private val configuration: Configuration) : ApplicationRunner {
     companion object {
         @JvmStatic
         private val logger = LoggerFactory.getLogger(InputService::class.java)
     }
 
-    private val waitInNanoBetweenReads = configuration.waitInMsBetweenReads * 1000
-
+    private val executor = Executors.newSingleThreadExecutor()
     private val shuttingDown = AtomicBoolean(false)
 
     override fun run(args: ApplicationArguments?) {
@@ -36,6 +34,7 @@ class InputService(@Autowired private val executor: Executor,
     @PreDestroy
     fun destroy() {
         shuttingDown.set(true)
+        executor.shutdown()
     }
 
     private fun startReader() {
@@ -49,7 +48,7 @@ class InputService(@Autowired private val executor: Executor,
                                 val request = lazilyReadDocument(requestCreator)
                                 if (request == null) {
 //                                        Jvm.pause(1)
-                                    LockSupport.parkNanos(waitInNanoBetweenReads)
+                                    LockSupport.parkNanos(configuration.waitInNanoBetweenReads)
                                 } else {
                                     if (request is PricingRequest) {
                                         if (destination == request.destination) {

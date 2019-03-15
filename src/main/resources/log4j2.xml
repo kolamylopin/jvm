@@ -17,9 +17,9 @@
         </RollingFile>
     </Appenders>
     <Loggers>
-        <AsyncRoot level="info">
+        <Root level="info">
             <AppenderRef ref="RollingFile"/>
             <AppenderRef ref="Console"/>
-        </AsyncRoot>
+        </Root>
     </Loggers>
 </Configuration>
