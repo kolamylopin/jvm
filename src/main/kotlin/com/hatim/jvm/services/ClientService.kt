@@ -1,6 +1,7 @@
 package com.hatim.jvm.services
 
 import com.hatim.jvm.data.PricingRequest
+import com.hatim.jvm.data.PricingResponse
 import com.hatim.jvm.utils.Configuration
 import net.openhft.chronicle.core.Jvm
 import net.openhft.chronicle.queue.ExcerptTailer
@@ -17,11 +18,12 @@ import java.util.concurrent.atomic.AtomicBoolean
 import javax.annotation.PreDestroy
 
 @Service
-class InputService(@Autowired private val instanceConfig: CloudEurekaInstanceConfig,
-                   @Autowired private val configuration: Configuration) : ApplicationRunner {
+class ClientService(@Autowired private val instanceConfig: CloudEurekaInstanceConfig,
+                    @Autowired private val configuration: Configuration,
+                    @Autowired private val publisherService: PublisherService) : ApplicationRunner {
     companion object {
         @JvmStatic
-        private val logger = LoggerFactory.getLogger(InputService::class.java)
+        private val logger = LoggerFactory.getLogger(ClientService::class.java)
     }
 
     private val executor = Executors.newSingleThreadExecutor()
@@ -42,6 +44,7 @@ class InputService(@Autowired private val instanceConfig: CloudEurekaInstanceCon
                 .build().use { queue ->
                     queue.createTailer().apply {
                         toEnd()
+                        // TODO: maybe use a ring buffer to reuse the created objects
                         val requestCreator = { PricingRequest() }
                         while (!shuttingDown.get()) {
                             instanceConfig.instanceId.let { destination ->
@@ -62,9 +65,11 @@ class InputService(@Autowired private val instanceConfig: CloudEurekaInstanceCon
                 }
     }
 
-    private fun processingPricingRequest(pricingRequest: PricingRequest) {
-        val delay = (System.nanoTime() - pricingRequest.timestamp) / 1e6
-        logger.info("Received request ${pricingRequest.id} within $delay ms")
+    private fun processingPricingRequest(request: PricingRequest) {
+        val delay = (System.nanoTime() - request.timestamp) / 1e6
+        logger.info("Received request ${request.id} within $delay ms")
+        val response = PricingResponse(request.id, "Result", System.nanoTime(), request.timestamp)
+        publisherService.addToQueue(response)
     }
 }
 
