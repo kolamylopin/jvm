@@ -2,6 +2,7 @@ package com.hatim.jvm.services
 
 import com.hatim.jvm.data.PricingRequest
 import com.hatim.jvm.utils.Configuration
+import net.openhft.chronicle.core.Jvm
 import net.openhft.chronicle.queue.ExcerptTailer
 import net.openhft.chronicle.queue.impl.single.SingleChronicleQueueBuilder
 import net.openhft.chronicle.wire.ReadMarshallable
@@ -13,7 +14,6 @@ import org.springframework.cloud.netflix.eureka.CloudEurekaInstanceConfig
 import org.springframework.stereotype.Service
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.locks.LockSupport
 import javax.annotation.PreDestroy
 
 @Service
@@ -47,12 +47,12 @@ class InputService(@Autowired private val instanceConfig: CloudEurekaInstanceCon
                             instanceConfig.instanceId.let { destination ->
                                 val request = lazilyReadDocument(requestCreator)
                                 if (request == null) {
-//                                        Jvm.pause(1)
-                                    LockSupport.parkNanos(configuration.waitInNanoBetweenReads)
+                                    Jvm.pause(1)
+//                                    LockSupport.parkNanos(configuration.waitInNanoBetweenReads)
                                 } else {
                                     if (request is PricingRequest) {
                                         if (destination == request.destination) {
-                                            notifyListeners(request)
+                                            processingPricingRequest(request)
                                         }
                                     }
                                 }
@@ -62,8 +62,9 @@ class InputService(@Autowired private val instanceConfig: CloudEurekaInstanceCon
                 }
     }
 
-    private fun notifyListeners(pricingRequest: PricingRequest) {
-        logger.info("Processing $pricingRequest")
+    private fun processingPricingRequest(pricingRequest: PricingRequest) {
+        val delay = (System.nanoTime() - pricingRequest.timestamp) / 1e6
+        logger.info("Received request ${pricingRequest.id} within $delay ms")
     }
 }
 
